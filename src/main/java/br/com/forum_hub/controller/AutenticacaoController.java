@@ -8,6 +8,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -15,8 +16,8 @@ public class AutenticacaoController {
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    @PostMapping
-    public ResponseEntity<Authentication> efetuarLogin(@Valid DadosLogin dados){
+    @PostMapping("/login")
+    public ResponseEntity<Authentication> efetuarLogin(@Valid @RequestBody DadosLogin dados){
         var autenticationToken = new UsernamePasswordAuthenticationToken(dados.email(), dados.senha());
         var authentication = authenticationManager.authenticate(autenticationToken);
         return ResponseEntity.ok(authentication);
