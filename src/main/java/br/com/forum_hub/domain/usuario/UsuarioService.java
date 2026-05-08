@@ -47,4 +47,21 @@ public class UsuarioService implements UserDetailsService {
         var usuario = usuarioRepository.findByToken(codigo).orElseThrow();
         usuario.verificar();
     }
+
+    @Transactional
+    public Usuario editarPerfil(Usuario usuario, DadosEdicaoUsuario novosDados) {
+        return usuario.alterarDados(novosDados);
+    }
+
+    public void alterarSenha(@Valid DadosAlteracaoSenha dados, Usuario usuario) {
+        if (!passwordEncoder.matches(dados.senhaAtual(), usuario.getPassword())) {
+            throw new RegraDeNegocioException("Senha digitada não confere com senha atual!");
+        }
+        String senhaCriptografada = passwordEncoder.encode(dados.novaSenha());
+        usuario.alterarSenha(senhaCriptografada);
+    }
+
+    public void desativarUsuario(Usuario usuario) {
+        usuario.desativar();
+    }
 }

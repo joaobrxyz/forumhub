@@ -2,10 +2,7 @@ package br.com.forum_hub.controller;
 
 import br.com.forum_hub.domain.topico.DadosCadastroTopico;
 import br.com.forum_hub.domain.topico.DadosListagemTopico;
-import br.com.forum_hub.domain.usuario.DadosCadastroUsuario;
-import br.com.forum_hub.domain.usuario.DadosListagemUsuario;
-import br.com.forum_hub.domain.usuario.Usuario;
-import br.com.forum_hub.domain.usuario.UsuarioService;
+import br.com.forum_hub.domain.usuario.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -29,5 +26,32 @@ public class UsuarioController {
     public ResponseEntity<String> verificarEmail(@RequestParam String codigo){
         usuarioService.verificarEmail(codigo);
         return ResponseEntity.ok("Conta verificada com sucesso!");
+    }
+
+    @GetMapping("/{nomeUsuario}")
+    public ResponseEntity<DadosListagemUsuario> listarUsuario(@PathVariable String nomeUsuario, @AuthenticationPrincipal Usuario usuario){
+        if (nomeUsuario.equals(usuario.getNomeUsuario())) {
+            var user = new DadosListagemUsuario(usuario);
+            return ResponseEntity.ok(user);
+        }
+        return ResponseEntity.badRequest().build();
+    }
+
+    @PutMapping("/editar-perfil")
+    public ResponseEntity<DadosListagemUsuario> editarPerfil(@RequestBody DadosEdicaoUsuario novosDados, @AuthenticationPrincipal Usuario usuario){
+        usuarioService.editarPerfil(usuario, novosDados);
+        return ResponseEntity.ok(new DadosListagemUsuario(usuario));
+    }
+
+    @PatchMapping("/alterar-senha")
+    public ResponseEntity<Void> alterarSenha(@RequestBody @Valid DadosAlteracaoSenha dados, @AuthenticationPrincipal Usuario usuario) {
+        usuarioService.alterarSenha(dados, usuario);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/desativar")
+    public ResponseEntity<Void> banirUsuario(@AuthenticationPrincipal Usuario usuario) {
+        usuarioService.desativarUsuario(usuario);
+        return ResponseEntity.noContent().build();
     }
 }

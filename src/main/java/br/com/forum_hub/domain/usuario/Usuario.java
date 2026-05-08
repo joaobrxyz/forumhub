@@ -25,6 +25,7 @@ public class Usuario implements UserDetails {
     private Boolean verificado;
     private String token;
     private LocalDateTime expiracaoToken;
+    private Boolean ativo;
 
     public Usuario(){}
 
@@ -38,6 +39,7 @@ public class Usuario implements UserDetails {
         this.verificado = false;
         this.token = UUID.randomUUID().toString();
         this.expiracaoToken = LocalDateTime.now().plusMinutes(30);
+        this.ativo = false;
     }
 
     @Override
@@ -86,5 +88,51 @@ public class Usuario implements UserDetails {
         this.verificado = true;
         this.token = null;
         this.expiracaoToken = null;
+        this.ativo = true;
+    }
+
+    public void setNomeCompleto(String nomeCompleto) {
+        this.nomeCompleto = nomeCompleto;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setSenha(String senha) {
+        this.senha = senha;
+    }
+
+    public void setNomeUsuario(String nomeUsuario) {
+        this.nomeUsuario = nomeUsuario;
+    }
+
+    public void setBiografia(String biografia) {
+        this.biografia = biografia;
+    }
+
+    public void setMiniBiografia(String miniBiografia) {
+        this.miniBiografia = miniBiografia;
+    }
+
+    public Usuario alterarDados(DadosEdicaoUsuario novosDados) {
+        if (novosDados.nomeUsuario() != null) {
+            this.nomeUsuario = novosDados.nomeUsuario();
+        }
+        if (novosDados.miniBiografia() != null) {
+            this.nomeUsuario = novosDados.miniBiografia();
+        }
+        if (novosDados.biografia() != null) {
+            this.nomeUsuario = novosDados.biografia();
+        }
+        return this;
+    }
+
+    public void alterarSenha(String senhaCriptografada) {
+        this.senha = senhaCriptografada;
+    }
+
+    public void desativar() {
+        this.ativo = false;
     }
 }
