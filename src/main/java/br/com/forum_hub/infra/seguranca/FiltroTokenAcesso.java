@@ -32,7 +32,7 @@ public class FiltroTokenAcesso extends OncePerRequestFilter {
         if (token != null) {
             // validação do token
             String email = tokenService.verificarToken(token);
-            Usuario usuario = usuarioRepository.findByEmailIgnoreCase(email).orElseThrow();
+            Usuario usuario = usuarioRepository.findByEmailIgnoreCaseAndVerificadoTrue(email).orElseThrow();
 
             Authentication authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
