@@ -1,5 +1,6 @@
 package br.com.forum_hub.domain.usuario;
 
+import br.com.forum_hub.domain.perfil.DadosPerfil;
 import br.com.forum_hub.domain.perfil.PerfilNome;
 import br.com.forum_hub.domain.perfil.PerfilRepository;
 import br.com.forum_hub.infra.email.EmailService;
@@ -69,5 +70,13 @@ public class UsuarioService implements UserDetailsService {
 
     public void desativarUsuario(Usuario usuario) {
         usuario.desativar();
+    }
+
+    @Transactional
+    public Usuario adicionarPerfil(Long id, @Valid DadosPerfil dados) {
+        var usuario = usuarioRepository.findById(id).orElseThrow();
+        var perfil = perfilRepository.findByNome(dados.perfilNome());
+        usuario.adicionarPerfil(perfil);
+        return usuario;
     }
 }
