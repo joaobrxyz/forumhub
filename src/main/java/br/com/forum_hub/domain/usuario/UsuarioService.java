@@ -1,6 +1,7 @@
 package br.com.forum_hub.domain.usuario;
 
 import br.com.forum_hub.domain.perfil.DadosPerfil;
+import br.com.forum_hub.domain.perfil.HierarquiaService;
 import br.com.forum_hub.domain.perfil.PerfilNome;
 import br.com.forum_hub.domain.perfil.PerfilRepository;
 import br.com.forum_hub.infra.email.EmailService;
@@ -8,6 +9,7 @@ import br.com.forum_hub.infra.exception.RegraDeNegocioException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -29,6 +31,9 @@ public class UsuarioService implements UserDetailsService {
 
     @Autowired
     private PerfilRepository perfilRepository;
+
+    @Autowired
+    private HierarquiaService hierarquiaService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -68,7 +73,12 @@ public class UsuarioService implements UserDetailsService {
         usuario.alterarSenha(senhaCriptografada);
     }
 
-    public void desativarUsuario(Usuario usuario) {
+    public void desativarUsuario(Long id, Usuario logado) {
+        var usuario = usuarioRepository.findById(id).orElseThrow();
+
+        if(hierarquiaService.usuarioNaoTemPermissoes(logado, usuario, "ROLE_ADMIN"))
+            throw new AccessDeniedException("Não é possivel realizar essa operação!");
+
         usuario.desativar();
     }
 
@@ -86,5 +96,11 @@ public class UsuarioService implements UserDetailsService {
         var perfil = perfilRepository.findByNome(dados.perfilNome());
         usuario.removerPerfil(perfil);
         return usuario;
+    }
+
+    @Transactional
+    public void reativarUsuario(Long id) {
+        var usuario = usuarioRepository.findById(id).orElseThrow();
+        usuario.reativar();
     }
 }

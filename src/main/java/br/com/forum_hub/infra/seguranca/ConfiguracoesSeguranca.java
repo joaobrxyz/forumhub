@@ -35,12 +35,13 @@ public class ConfiguracoesSeguranca {
                             req.requestMatchers(HttpMethod.POST, "/topicos").hasRole("ESTUDANTE");
                             req.requestMatchers(HttpMethod.PUT, "/topicos").hasRole("ESTUDANTE");
                             req.requestMatchers(HttpMethod.DELETE, "/topicos/**").hasRole("ESTUDANTE");
-                            req.requestMatchers(HttpMethod.PATCH, "/topicos/{idTopico}/**").hasAnyRole("ESTUDANTE", "INSTRUTOR");
+
+                            req.requestMatchers(HttpMethod.PATCH, "/topicos/{idTopico}/respostas/**").hasAnyRole("INSTRUTOR", "ESTUDANTE");
+
                             req.requestMatchers(HttpMethod.PATCH, "/topicos/**").hasRole("MODERADOR");
 
                             req.requestMatchers(HttpMethod.PATCH, "/adicionar-perfil/**").hasRole("ADMIN");
-                            req.requestMatchers(HttpMethod.PATCH, "/remover-perfil/**").hasRole("ADMIN");
-
+                            req.requestMatchers(HttpMethod.PATCH, "/reativar-conta/**").hasRole("ADMIN");
 
                             req.anyRequest().authenticated();
                         }

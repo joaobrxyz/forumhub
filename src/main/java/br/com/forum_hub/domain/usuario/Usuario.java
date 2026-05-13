@@ -144,6 +144,10 @@ public class Usuario implements UserDetails {
         this.ativo = false;
     }
 
+    public void reativar() {
+        this.ativo = true;
+    }
+
     public void adicionarPerfil(Perfil perfil) {
         this.perfis.add(perfil);
     }
