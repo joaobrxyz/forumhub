@@ -43,8 +43,8 @@ public class RespostaController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<DadosListagemResposta> marcarComoSolucao(@PathVariable Long id){
-        var resposta = service.marcarComoSolucao(id);
+    public ResponseEntity<DadosListagemResposta> marcarComoSolucao(@PathVariable Long id,@AuthenticationPrincipal Usuario logado){
+        var resposta = service.marcarComoSolucao(id, logado);
         return ResponseEntity.ok(new DadosListagemResposta(resposta));
     }
 
