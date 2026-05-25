@@ -1,5 +1,6 @@
 package br.com.forum_hub.domain.autenticacao;
 
+import br.com.forum_hub.domain.autenticacao.github.DadosEmail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -48,8 +49,12 @@ public class LoginGithubService {
                 .headers(httpHeaders -> httpHeaders.addAll(headers))
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
-                .body(String.class);
-
-        return resposta;
+                .body(DadosEmail[].class);
+        for (DadosEmail d: resposta){
+            if (d.primary() && d.verified()) {
+                return d.email();
+            }
+        }
+        return null;
     }
 }
