@@ -53,4 +53,23 @@ public class LoginGithubController {
 
         return ResponseEntity.ok(new DadosToken(tokenAcesso, refreshTokenAtt));
     }
+
+    @GetMapping("/registro")
+    public ResponseEntity<Void> redirecionarRegistroGithub(){
+        var url = loginGithubService.gerarUrlRegistro();
+        var headers = new HttpHeaders();
+        headers.setLocation(URI.create(url));
+        return new ResponseEntity<>(headers, HttpStatus.FOUND);
+    }
+
+    @GetMapping("/registro-autorizado")
+    public ResponseEntity<DadosToken> registrarOAuth(@RequestParam String code){
+        var dadosUsuario = loginGithubService.obterDadosOAuth( code);
+        var usuario = usuarioService.cadastrarVerificado(dadosUsuario);
+        var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String tokenAcesso = tokenService.gerarToken(usuario);
+        String refreshToken = tokenService.gerarRefreshToken(usuario);
+        return ResponseEntity.ok(new DadosToken(tokenAcesso, refreshToken, false));
+    }
 }
