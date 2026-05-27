@@ -1,8 +1,8 @@
-package br.com.forum_hub.domain.autenticacao;
+package br.com.forum_hub.domain.autenticacao.google;
 
 import br.com.forum_hub.domain.autenticacao.github.DadosEmail;
 import br.com.forum_hub.domain.usuario.DadosCadastroUsuario;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -12,37 +12,43 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
-public class LoginGithubService {
-    private final String clientId = "Ov23liblrRqqxHrW1cZa";
-    private final String clientSecret = "1a2e8f57dfc6d63503243093e3bff9c91ca274d4";
-    private final String redirectUri = "http://localhost:8080/login/github/autorizado";
+public class LoginGoogleService {
+    @Value("${google.oauth.client.id}")
+    private String clientId;
+
+    @Value("${google.oauth.client.secret}")
+    private String clientSecret;
+
+    private final String redirectUri = "http://localhost:8080/login/google/autorizado";
     private final RestClient restClient;
 
-    public LoginGithubService(RestClient.Builder restClientBuilder) {
+    public LoginGoogleService(RestClient.Builder restClientBuilder) {
         this.restClient = restClientBuilder.build();
     }
 
     public String gerarUrl(){
-        return "https://github.com/login/oauth/authorize"+
+        return "https://accounts.google.com/o/oauth2/v2/auth"+
                 "?client_id="+clientId+
                 "&redirect_uri="+redirectUri+
-                "&scope=read:user,user:email,public_repo";
+                "&scope=https://www.googleapis.com/auth/userinfo.email" +
+                "&response_type=code";
     }
 
     private String obterToken(String code, String id, String uri) {
         var resposta = restClient.post()
-                .uri("https://github.com/login/oauth/access_token")
+                .uri("https://oauth2.googleapis.com/token")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .body(Map.of("code", code, "client_id", id,
-                        "client_secret", clientSecret, "redirect_uri", uri))
+                        "client_secret", clientSecret, "redirect_uri", uri, "grant_type", "authorization_code"))
                 .retrieve()
-                .body(Map.class);
-        return resposta.get("access_token").toString();
+                .body(String.class);
+        return resposta;
     }
 
     public String obterEmail(String code){
         var token = obterToken(code, clientId, redirectUri);
+        System.out.println(token);
         var headers = new HttpHeaders();
         headers.setBearerAuth(token);
         return enviarRequisicaoEmail(headers);
