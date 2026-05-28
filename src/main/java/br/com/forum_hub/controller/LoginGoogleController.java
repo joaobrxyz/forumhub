@@ -2,7 +2,7 @@ package br.com.forum_hub.controller;
 
 import br.com.forum_hub.domain.autenticacao.DadosToken;
 import br.com.forum_hub.domain.autenticacao.TokenService;
-import br.com.forum_hub.domain.autenticacao.github.LoginGithubService;
+import br.com.forum_hub.domain.usuario.Usuario;
 import br.com.forum_hub.domain.autenticacao.google.LoginGoogleService;
 import br.com.forum_hub.domain.usuario.UsuarioRepository;
 import br.com.forum_hub.domain.usuario.UsuarioService;
@@ -45,21 +45,22 @@ public class LoginGoogleController {
 
     @GetMapping("/autorizado")
     public ResponseEntity<DadosToken> autenticarUsuarioOAuth(@RequestParam String code){
-        var email = loginGoogleService.obterEmail(code);
-
-        var usuario = usuarioRepository.findByEmailIgnoreCaseAndVerificadoTrueAndAtivoTrue(email).orElseThrow();
-
+        var email = loginGoogleService.obterEmail(code); // uso da service no lugar do repository
+        var usuario = usuarioService.loadUserByUsername(email);
         var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
+
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        String tokenAcesso = tokenService.gerarToken( usuario);
-        String refreshTokenAtt = tokenService.gerarRefreshToken(usuario);
+        String tokenAcesso = tokenService.gerarToken((Usuario) authentication.getPrincipal());
 
-        return ResponseEntity.ok(new DadosToken(tokenAcesso, refreshTokenAtt, false));
+        String refreshToken = tokenService.gerarRefreshToken((Usuario) authentication.getPrincipal());
+
+        return ResponseEntity.ok(new DadosToken(tokenAcesso, refreshToken, false));
     }
 
     @GetMapping("/registro")
-    public ResponseEntity<Void> redirecionarRegistroGoogle(){
+
+    public ResponseEntity<Void> redirecionarGoogleRegistro() {
         var url = loginGoogleService.gerarUrlRegistro();
         var headers = new HttpHeaders();
         headers.setLocation(URI.create(url));
@@ -67,13 +68,13 @@ public class LoginGoogleController {
     }
 
     @GetMapping("/registro-autorizado")
-    public ResponseEntity<DadosToken> registrarOAuth(@RequestParam String code){
-        var dadosUsuario = loginGoogleService.obterDadosOAuth( code);
+    public ResponseEntity<DadosToken> registrarUsuarioOAuth(@RequestParam String code){
+        var dadosUsuario = loginGoogleService.obterDadosOAuth(code);
         var usuario = usuarioService.cadastrarVerificado(dadosUsuario);
         var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String tokenAcesso = tokenService.gerarToken(usuario);
-        String refreshToken = tokenService.gerarRefreshToken(usuario);
+        String tokenAcesso = tokenService.gerarToken((Usuario) authentication.getPrincipal());
+        String refreshToken = tokenService.gerarRefreshToken((Usuario) authentication.getPrincipal());
         return ResponseEntity.ok(new DadosToken(tokenAcesso, refreshToken, false));
     }
 }
