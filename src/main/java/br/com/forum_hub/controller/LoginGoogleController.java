@@ -59,7 +59,6 @@ public class LoginGoogleController {
     }
 
     @GetMapping("/registro")
-
     public ResponseEntity<Void> redirecionarGoogleRegistro() {
         var url = loginGoogleService.gerarUrlRegistro();
         var headers = new HttpHeaders();

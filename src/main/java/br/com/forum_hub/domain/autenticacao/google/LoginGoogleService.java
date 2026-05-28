@@ -76,9 +76,10 @@ public class LoginGoogleService {
     }
 
     public DadosCadastroUsuario obterDadosOAuth(String codigo){
-        var token = obterTokens(codigo, redirectUriRegistro);
-        System.out.println(token);
-        var decodedJWT = JWT.decode(token, redirectUriRegistro);
+        var tokens = obterTokens(codigo, redirectUriRegistro);
+        var idToken = tokens.get("id_token").toString();
+        System.out.println(tokens);
+        var decodedJWT = JWT.decode(idToken);
         var email = decodedJWT.getClaim("email").asString();
         var senha = UUID.randomUUID().toString();
         var nomeCompleto = decodedJWT.getClaim("name").asString();
