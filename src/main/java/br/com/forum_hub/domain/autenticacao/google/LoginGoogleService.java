@@ -2,6 +2,8 @@ package br.com.forum_hub.domain.autenticacao.google;
 
 import br.com.forum_hub.domain.autenticacao.github.DadosEmail;
 import br.com.forum_hub.domain.usuario.DadosCadastroUsuario;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -42,16 +44,17 @@ public class LoginGoogleService {
                 .body(Map.of("code", code, "client_id", id,
                         "client_secret", clientSecret, "redirect_uri", uri, "grant_type", "authorization_code"))
                 .retrieve()
-                .body(String.class);
-        return resposta;
+                .body(Map.class);
+        return resposta.get("id_token").toString();
     }
 
     public String obterEmail(String code){
         var token = obterToken(code, clientId, redirectUri);
         System.out.println(token);
-        var headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        return enviarRequisicaoEmail(headers);
+
+        var decodedJWT = JWT.decode(token);
+        System.out.println(decodedJWT.getClaims());
+        return decodedJWT.getClaim("email").asString();
     }
 
     public String gerarUrlRegistro() {
