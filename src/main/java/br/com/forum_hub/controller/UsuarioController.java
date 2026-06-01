@@ -16,19 +16,6 @@ public class UsuarioController {
     @Autowired
     private UsuarioService usuarioService;
 
-    @PostMapping("/registrar")
-    public ResponseEntity<DadosListagemUsuario> cadastrar(@RequestBody @Valid DadosCadastroUsuario dados, UriComponentsBuilder uriBuilder){
-        var usuario = usuarioService.cadastrar(dados);
-        var uri = uriBuilder.path("/{nomeUsuario}").buildAndExpand(usuario.getNomeUsuario()).toUri();
-        return ResponseEntity.created(uri).body(new DadosListagemUsuario(usuario));
-    }
-
-    @GetMapping("/verificar-conta")
-    public ResponseEntity<String> verificarEmail(@RequestParam String codigo){
-        usuarioService.verificarEmail(codigo);
-        return ResponseEntity.ok("Conta verificada com sucesso!");
-    }
-
     @GetMapping("/{nomeUsuario}")
     public ResponseEntity<DadosListagemUsuario> listarUsuario(@PathVariable String nomeUsuario, @AuthenticationPrincipal Usuario usuario){
         if (nomeUsuario.equals(usuario.getNomeUsuario())) {
@@ -72,11 +59,5 @@ public class UsuarioController {
     public ResponseEntity<Void> reativarUsuario(@PathVariable Long id){
         usuarioService.reativarUsuario(id);
         return ResponseEntity.noContent().build();
-    }
-
-    @PatchMapping("configurar-a2f")
-    public ResponseEntity<String> gerarQrCode(@AuthenticationPrincipal Usuario logado){
-        var url = usuarioService.gerarQrCode(logado);
-        return ResponseEntity.ok(url);
     }
 }
