@@ -6,6 +6,7 @@ import br.com.forum_hub.domain.perfil.PerfilNome;
 import br.com.forum_hub.domain.perfil.PerfilRepository;
 import br.com.forum_hub.infra.email.EmailService;
 import br.com.forum_hub.infra.exception.RegraDeNegocioException;
+import br.com.forum_hub.infra.seguranca.totp.TotpService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,9 @@ public class UsuarioService implements UserDetailsService {
 
     @Autowired
     private HierarquiaService hierarquiaService;
+
+    @Autowired
+    private TotpService totpService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -109,5 +113,14 @@ public class UsuarioService implements UserDetailsService {
         var perfil = perfilRepository.findByNome(PerfilNome.ESTUDANTE);
         return new Usuario(dados, senhaCriptografada, perfil, verificado);
 
+    }
+
+    @Transactional
+    public String gerarQrCode(Usuario logado) {
+        var secret = totpService.gerarSecret();
+        logado.gerarSecret(secret);
+        usuarioRepository.save(logado);
+
+        return totpService.gerarQrCode(logado);
     }
 }
